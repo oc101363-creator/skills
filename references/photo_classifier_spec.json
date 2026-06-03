@@ -1,0 +1,80 @@
+{
+  "category": "universal",
+  "category_name_cn": "通用（所有品类）",
+  "version": "2.0",
+  "purpose": "所有品类共用一套编号规则，不再按品类区分固定拍摄角度",
+  "input_pattern": {
+    "expected_files": "不限，1-3 张全身照 + 任意数量细节图",
+    "naming_convention": "重命名为 1.jpg ~ N.jpg，编号决定类型",
+    "acceptable_sources": ["wechat_photos", "factory_camera", "phone_uploads"]
+  },
+  "photo_slots": {
+    "1": {
+      "slot_name": "全身照1",
+      "type": "全身照",
+      "content": "产品整体外观（任意角度）",
+      "template_outputs": {
+        "main_01": { "role": "product_main", "note": "白底主图" },
+        "main_02": { "role": "product_main", "note": "产品介绍主图" },
+        "a_plus_01": { "role": "product_main", "note": "A+ 01 Hero" }
+      }
+    },
+    "2": {
+      "slot_name": "全身照2",
+      "type": "全身照",
+      "content": "另一角度整体外观",
+      "template_outputs": {
+        "main_02": { "role": "scene_mechanic", "note": "产品介绍辅助图" }
+      }
+    },
+    "3": {
+      "slot_name": "全身照3",
+      "type": "全身照",
+      "content": "第三个角度整体外观",
+      "template_outputs": {
+        "main_02": { "role": "scene_mechanic", "note": "产品介绍辅助图" }
+      }
+    },
+    "≥4": {
+      "slot_name": "细节图",
+      "type": "细节图",
+      "content": "任意部位特写（不限部位、不限数量）",
+      "template_outputs": {
+        "main_05": { "role": "detail_photos", "note": "主图 05 细节特写素材" },
+        "a_plus_04": { "role": "detail_photos", "note": "A+ 04 Detail Closeups 素材" }
+      },
+      "panel_rule": "≥4 张细节图 → A+ 04 用四面板 04_2.png；<4 张 → 三面板 04.png",
+      "03_conditional": "仅当细节图 ≥4 张（即使用四面板）时才复制 03 固定模板"
+    }
+  },
+  "agent_workflow": {
+    "step_1_receive": {
+      "action": "扫描文件夹，识别所有 .jpg/.png 文件",
+      "expected_count": "不限，至少 1 张全身照 + 若干细节图"
+    },
+    "step_2_classify": {
+      "action": "按通用规则分类：1-3 号为全身照，≥4 号为细节图",
+      "fallback": "若无法区分全身/细节，保留原始文件名并在日志中标记待人工确认"
+    },
+    "step_3_rename": {
+      "action": "按顺序重命名为 1.jpg ~ N.jpg",
+      "conflict_resolution": "全身照优先编号 1-3，细节照从 4 开始"
+    },
+    "step_4_validate": {
+      "action": "检查数量",
+      "checks": [
+        "至少有 1 张全身照（编号 1-3）",
+        "细节图（≥4）不重复展示同一部位"
+      ]
+    },
+    "step_5_map": {
+      "action": "根据模板映射规则映射到输出占位符",
+      "reference": "A_Plus_template_mapping_spec.json"
+    }
+  },
+  "consistency_rules": {
+    "lighting": "同一产品的所有图必须在同一光线环境下完成，避免色差",
+    "product_state": "防尘盖要么全有要么全无，不可部分有、部分无",
+    "background": "实拍背景越干净越好，后期统一 API 去背景处理"
+  }
+}

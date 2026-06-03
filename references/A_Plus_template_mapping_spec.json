@@ -1,0 +1,182 @@
+{
+  "category": "starter_motor",
+  "category_name_cn": "起动机",
+  "version": "1.0",
+  "purpose": "Agent 根据标准化 info.json 和工厂精修图，自动生成 A+ 5张海报的 specs",
+  "brand_assets": {
+    "logo": "logo.png",
+    "primary_color": "#F37021",
+    "background": "#0a0a0a",
+    "title_color": "#FFFFFF",
+    "subtitle_color": "#aaaaaa",
+    "data_label_color": "#FFFFFF",
+    "data_value_color": "#F37021"
+  },
+  "output_images": {
+    "01": {
+      "name": "Hero 主图",
+      "name_en": "Hero Banner",
+      "template_type": "ai_prompt",
+      "template_file": "templates/A_Plus/PC/01.png (or moblie/01.png)",
+      "factory_photo_mapping": {
+        "product_main": "processed/ 中 1.jpg 或 01.jpg（全身照，任意角度）"
+      },
+      "info_json_mapping": {
+        "headline": {
+          "source": "title.full",
+          "transform": "remove_sku_prefix"
+        },
+        "subheadline": {
+          "source": "features",
+          "transform": "first_feature_desc",
+          "fallback": "Premium Quality Replacement Part"
+        },
+        "features": {
+          "source": "features",
+          "max_items": 4
+        },
+        "vehicle_fitment_preview": {
+          "source": "compatibility.vehicles",
+          "max_items": 3,
+          "transform": "format_year_make_model"
+        }
+      },
+      "prompt_rules": [
+        "USE THE PROVIDED PHOTO EXACTLY — shape, structure, color, details, angle must remain identical",
+        "VEXRIM logo top-left, small and clean, orange #F37021",
+        "Dark background #0a0a0a ~ #111111",
+        "Background vehicle: dark silhouette of sedan/SUV based on vehicle_fitment_preview",
+        "Vehicle must be small, distant, blurred with motion blur/depth of field",
+        "NO sports cars, muscle cars, or futuristic concept vehicles",
+        "Large headline white, bold, modern sans-serif",
+        "4 feature blocks bottom-left: orange icon + white title + gray description"
+      ],
+      "reference_order": ["logo", "product_main"],
+      "api_params": { "size": "3:2", "resolution": "2k" }
+    },
+    "02": {
+      "name": "Fitment & Specs",
+      "name_en": "Vehicle Fitment & Specifications",
+      "template_type": "ai_prompt",
+      "template_file": "templates/A_Plus/PC/02.png (or moblie/02.png)",
+      "factory_photo_mapping": {},
+      "info_json_mapping": {
+        "vehicle_fitment": {
+          "source": "compatibility.vehicles",
+          "max_items": 6,
+          "transform": "format_fitment_table",
+          "headers": ["YEAR", "MAKE", "MODEL", "NOTE"]
+        },
+        "oe_numbers": {
+          "source": "oe_numbers",
+          "max_items": 6
+        },
+        "specifications": {
+          "source": "specifications",
+          "required_labels": ["Voltage", "Rotation", "Teeth", "Power"]
+        }
+      },
+      "prompt_rules": [
+        "NO product image, NO 3D render, text-only layout",
+        "Three standardized sections with orange headers:",
+        "  1. VEHICLE FITMENT — table: YEAR | MAKE | MODEL | NOTE",
+        "  2. OE PART NUMBERS — grid, uniform font size, copy VERBATIM",
+        "  3. SPECIFICATIONS — label-value pairs, Label white / Value orange",
+        "Max 3 font sizes total (header / data / label)",
+        "Orange divider lines between sections",
+        "Dark background, data areas NO gradients",
+        "ZERO HALLUCINATION: all data must come from info.json ONLY"
+      ],
+      "reference_order": ["logo"],
+      "api_params": { "size": "3:2", "resolution": "2k" }
+    },
+    "03": {
+      "name": "Why Choose Us",
+      "name_en": "Brand Promise",
+      "template_type": "fixed_copy",
+      "template_file": "templates/A_Plus/PC/03.png (or moblie/03.png)",
+      "factory_photo_mapping": {},
+      "info_json_mapping": {},
+      "conditional_copy": {
+        "rule": "仅当 04 使用四面板（即细节图 >= 4 张）时才复制 03，否则不放 03",
+        "source_pc": "templates/A_Plus/PC/03.png",
+        "source_mobile": "templates/A_Plus/moblie/03.png"
+      },
+      "api_params": null
+    },
+    "04": {
+      "name": "Detail Closeups",
+      "name_en": "Product Detail Shots",
+      "template_type": "ai_prompt",
+      "template_file": "templates/A_Plus/PC/04.png (3-panel) or 04_2.png (4-panel)",
+      "factory_photo_mapping": {
+        "detail_photos": "processed/ 中所有文件名 ≥4 的精修图（如 4.png/04.png、5.png/05.png、6.png/06.png、7.png/07.png）"
+      },
+      "info_json_mapping": {
+        "detail_callouts": {
+          "source": "category",
+          "transform": "detail_labels_by_category",
+          "starter_motor": ["DRIVE GEAR", "SOLENOID SWITCH", "OE QUALITY FIT"],
+          "alternator": ["PULLEY SYSTEM", "VOLTAGE REGULATOR", "OE QUALITY FIT"],
+          "oxygen_sensor": ["Plug Type A", "Plug Type B", "OE Connectors"],
+          "wiper_motor": ["LINKAGE ARM", "MOTOR HOUSING", "OE QUALITY FIT"],
+          "default": ["DETAIL A", "DETAIL B", "DETAIL C"]
+        }
+      },
+      "panel_auto_switch": {
+        "rule": "processed/ 中名字 ≥4 的精修图数量",
+        "3_panel": {
+          "condition": "count < 4",
+          "template_pc": "templates/A_Plus/PC/04.png",
+          "template_mobile": "templates/A_Plus/moblie/04.png",
+          "photo_count": 3,
+          "prompt": "3-panel layout: LEFT / CENTER / RIGHT"
+        },
+        "4_panel": {
+          "condition": "count >= 4",
+          "template_pc": "templates/A_Plus/PC/04_2.png",
+          "template_mobile": "templates/A_Plus/moblie/04_2.png",
+          "photo_count": 4,
+          "prompt": "4-panel layout: far-left / left-center / right-center / far-right"
+        }
+      },
+      "prompt_rules": [
+        "Product photos must remain IDENTICAL to references — do NOT redraw, reshape, or alter",
+        "White-background photos blend into dark panel with soft gradient transition on edges",
+        "Top headline: 'DURABLE' in orange + 'AND RELIABLE' in white"
+      ],
+      "reference_order": ["template_layout", "detail_photo_1", "detail_photo_2", "detail_photo_3", "detail_photo_4"],
+      "api_params": { "size": "3:2", "resolution": "2k" }
+    },
+    "05": {
+      "name": "Brand Endframe",
+      "name_en": "Brand End Frame",
+      "template_type": "fixed_copy",
+      "template_file": "templates/A_Plus/PC/05.png (or moblie/05.png)",
+      "factory_photo_mapping": {},
+      "info_json_mapping": {},
+      "api_params": null
+    }
+  },
+  "panel_flexibility": {
+    "description": "所有文件名 ≥4 的精修图均为细节图，04 根据实际素材数量自动切换面板数",
+    "rule": "processed/ 中名字 ≥4 的精修图数量",
+    "3_panel": {
+      "condition": "count < 4",
+      "template_pc": "templates/A_Plus/PC/04.png",
+      "template_mobile": "templates/A_Plus/moblie/04.png",
+      "photo_count": 3,
+      "prompt": "3-panel layout: LEFT / CENTER / RIGHT"
+    },
+    "4_panel": {
+      "condition": "count >= 4",
+      "template_pc": "templates/A_Plus/PC/04_2.png",
+      "template_mobile": "templates/A_Plus/moblie/04_2.png",
+      "photo_count": 4,
+      "prompt": "4-panel layout: far-left / left-center / right-center / far-right"
+    },
+    "03_conditional": {
+      "rule": "仅当 04 使用四面板（即细节图 >= 4 张）时才复制 03 固定模板，否则不放 03"
+    }
+  }
+}

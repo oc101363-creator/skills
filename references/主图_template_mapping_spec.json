@@ -1,0 +1,226 @@
+{
+  "category": "starter_motor",
+  "category_name_cn": "起动机",
+  "version": "1.0",
+  "template_dir": "template/5.6/起动机通用模板",
+  "brand_assets": {
+    "logo": "competitors_by_batch/sample/logo.png",
+    "service_image": "competitors_by_batch/sample/07.png",
+    "primary_color": "#F37021",
+    "background": "#FFFFFF",
+    "secondary_bg": "#F5F5F5"
+  },
+  "factory_photo_standard": {
+    "1.jpg": { "angle": "正侧面45度", "content": "整体外观，正面+侧面特征，结构完整" },
+    "2.jpg": { "angle": "俯视45度", "content": "顶部与反面，含接线端子、安装部位" },
+    "3.jpg": { "angle": "反向45度", "content": "反向侧面外观，完整结构" },
+    "4.jpg": { "angle": "开关特写45度", "content": "电磁开关接线端子细节" },
+    "5.jpg": { "angle": "后盖特写45度", "content": "后盖结构与固定螺丝" },
+    "6.jpg": { "angle": "后侧俯视特写", "content": "后侧俯视角度细节" },
+    "7.jpg": { "angle": "前盖齿轮特写45度", "content": "前盖齿轮与安装孔" }
+  },
+  "output_images": {
+    "01": {
+      "name": "白底主图",
+      "name_en": "White Background Main Image",
+      "template_type": "white_bg",
+      "template_file": null,
+      "factory_photo_mapping": {
+        "product_main": "1.jpg"
+      },
+      "info_json_mapping": {},
+      "prompt_rules": [
+        "Pure clean white background ONLY",
+        "Product occupies ~85% of frame",
+        "NO text, NO logos, NO watermarks",
+        "Must keep product IDENTICAL to factory photo"
+      ],
+      "api_params": { "size": "1:1", "resolution": "2k" }
+    },
+    "02": {
+      "name": "产品介绍",
+      "name_en": "Product Introduction",
+      "template_type": "template_fill",
+      "template_file": "02_产品介绍_模板_20260520073309.png",
+      "factory_photo_mapping": {
+        "product_main": "1.jpg",
+        "scene_mechanic": "3.jpg"
+      },
+      "info_json_mapping": {
+        "title": { "source": "title", "extract": "product_type", "fallback": "Premium Starter Motor" },
+        "features": {
+          "source": "features",
+          "extract": "first_3",
+          "max_items": 3
+        }
+      },
+      "placeholder_fills": {
+        "PRODUCT_PHOTO_ZONE": "factory:product_main",
+        "SCENE_PHOTO_ZONE": "factory:scene_mechanic",
+        "FEATURE_1_TITLE": "info:features[0].title",
+        "FEATURE_1_DESC": "info:features[0].desc",
+        "FEATURE_2_TITLE": "info:features[1].title",
+        "FEATURE_2_DESC": "info:features[1].desc",
+        "FEATURE_3_TITLE": "info:features[2].title",
+        "FEATURE_3_DESC": "info:features[2].desc"
+      },
+      "prompt_rules": [
+        "Fill all placeholder areas with real product data",
+        "Keep VEXRIM orange+white brand style",
+        "Product photo must match factory reference exactly",
+        "All text in ENGLISH"
+      ],
+      "api_params": { "size": "1:1", "resolution": "2k" }
+    },
+    "03": {
+      "name": "兼容性信息",
+      "name_en": "Fitment & OE Numbers",
+      "template_type": "template_fill",
+      "template_file": "03_兼容性信息_模板_20260520073309.png",
+      "factory_photo_mapping": {},
+      "info_json_mapping": {
+        "fitment_list": {
+          "source": "compatibility.vehicles",
+          "transform": "parse_fitment",
+          "max_items": 6
+        },
+        "oe_numbers": {
+          "source": "oe_numbers",
+          "max_items": 6
+        }
+      },
+      "placeholder_fills": {
+        "VEHICLE_SCENE_ZONE": "ai_generated:refrigerated_commercial_truck_unbranded",
+        "FITMENT_ITEM_1": "info:fitment_list[0]",
+        "FITMENT_ITEM_2": "info:fitment_list[1]",
+        "FITMENT_ITEM_3": "info:fitment_list[2]",
+        "FITMENT_ITEM_4": "info:fitment_list[3]",
+        "FITMENT_ITEM_5": "info:fitment_list[4]",
+        "OE_NUMBER_1": "info:oe_numbers[0]",
+        "OE_NUMBER_2": "info:oe_numbers[1]",
+        "OE_NUMBER_3": "info:oe_numbers[2]",
+        "OE_NUMBER_4": "info:oe_numbers[3]"
+      },
+      "prompt_rules": [
+        "ZERO HALLUCINATION: all part numbers and vehicle data must come from info.json ONLY",
+        "Copy part numbers VERBATIM",
+        "Vehicle year ranges must be exact"
+      ],
+      "api_params": { "size": "1:1", "resolution": "2k" }
+    },
+    "04": {
+      "name": "技术规格",
+      "name_en": "Technical Specifications",
+      "template_type": "template_fill",
+      "template_file": "04_技术规格_模板.png",
+      "factory_photo_mapping": {
+        "product_main": "1.jpg"
+      },
+      "info_json_mapping": {
+        "specifications": {
+          "source": "specifications",
+          "transform": "format_spec_table"
+        }
+      },
+      "placeholder_fills": {
+        "SPEC_TABLE_ZONE": "info:specifications",
+        "PRODUCT_PHOTO_ZONE": "factory:product_main"
+      },
+      "prompt_rules": [
+        "Left panel shows TECHNICAL SPECIFICATIONS table (parameter + value pairs)",
+        "Right panel shows product photo",
+        "All specs verbatim from info.json",
+        "Include: Voltage, Rotation, Teeth, Power, Compatibility Year Range, OE Replacement Numbers",
+        "Use clean data-table style with orange accents"
+      ],
+      "api_params": { "size": "1:1", "resolution": "2k" }
+    },
+    "05": {
+      "name": "细节特写",
+      "name_en": "Product Details",
+      "template_type": "template_fill",
+      "template_file": "05_细节特写_模板_20260520073309.png",
+      "factory_photo_mapping": {
+        "detail_1_switch": "4.jpg",
+        "detail_2_rear_cover": "5.jpg",
+        "detail_3_side": "6.jpg",
+        "detail_4_gear": "7.jpg"
+      },
+      "info_json_mapping": {},
+      "placeholder_fills": {
+        "DETAIL_PHOTO_1": "factory:detail_1_switch",
+        "DETAIL_PHOTO_2": "factory:detail_2_rear_cover",
+        "DETAIL_PHOTO_3": "factory:detail_3_side",
+        "DETAIL_PHOTO_4": "factory:detail_4_gear"
+      },
+      "prompt_rules": [
+        "4 close-up photos in 2x2 grid",
+        "Each photo must faithfully reproduce the factory reference",
+        "Do NOT alter product shape, details, or proportions"
+      ],
+      "api_params": { "size": "1:1", "resolution": "2k" }
+    },
+    "06": {
+      "name": "对比图",
+      "name_en": "Others vs VEXRIM",
+      "template_type": "template_fill",
+      "template_file": "06_对比图_模板_20260520073309.png",
+      "factory_photo_mapping": {
+        "vexrim_product": "1.jpg"
+      },
+      "info_json_mapping": {
+        "advantages": {
+          "source": "features",
+          "extract": "titles",
+          "max_items": 4
+        }
+      },
+      "placeholder_fills": {
+        "VEXRIM_PRODUCT_PHOTO": "factory:vexrim_product",
+        "OTHERS_PRODUCT_PHOTO": "ai_generated:aged_worn_version_of_product",
+        "ADVANTAGE_1": "info:advantages[0]",
+        "ADVANTAGE_2": "info:advantages[1]",
+        "ADVANTAGE_3": "info:advantages[2]",
+        "ADVANTAGE_4": "info:advantages[3]"
+      },
+      "prompt_rules": [
+        "Left side shows OLD/WORN starter motor (AI generates aged version based on reference)",
+        "Right side shows NEW premium VEXRIM starter motor (use factory photo)",
+        "Advantages list on right side, disadvantages on left",
+        "Bottom bar: 4 brand promise badges"
+      ],
+      "api_params": { "size": "1:1", "resolution": "2k" }
+    },
+    "07": {
+      "name": "品牌服务",
+      "name_en": "Brand Service",
+      "template_type": "fixed_copy",
+      "template_file": "07_品牌服务_模板_20260520073309.png",
+      "factory_photo_mapping": {},
+      "info_json_mapping": {},
+      "prompt_rules": ["Direct copy from fixed template, no changes"],
+      "api_params": null
+    }
+  },
+  "info_extraction_rules": {
+    "title_parser": {
+      "pattern": "Fit for ([0-9]{4}-[0-9]{4})?\\s*([A-Za-z\\s]+)\\s+(?:w\\/[A-Za-z]+)?",
+      "extracts": ["year_range", "vehicle_brand"]
+    },
+    "oe_number_patterns": [
+      "\\\\b[0-9]{3,6}[A-Z0-9\\-]*\\\\b",
+      "\\\\b[A-Z]{2,5}[0-9]{3,8}[A-Z0-9\\-]*\\\\b"
+    ],
+    "spec_parser": {
+      "voltage": "\\\\b([0-9]+)V\\\\b",
+      "power": "\\\\b([0-9\\.]+)KW\\\\b",
+      "teeth": "\\\\b([0-9]+)\\s*teeth?\\\\b",
+      "rotation": "\\\\b(CW|clockwise|CCW)\\\\b"
+    },
+    "bullet_transform_rules": [
+      "Remove marketing fluff words",
+      "Extract core claim (what + benefit)",
+      "Limit to 3-5 words for title, 1 sentence for desc"
+    ]
+  }
+}
