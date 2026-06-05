@@ -15,7 +15,7 @@ const envContent = fs.readFileSync(ENV_PATH, "utf8");
 const API_KEY = envContent.match(/APIMART_API_KEY=(.+)/)?.[1]?.trim();
 if (!API_KEY) { console.error("Missing API key"); process.exit(1); }
 
-const BASE_URL = "https://api.apimart.ai";
+const BASE_URL = "https://api.aishuch.com";
 const headers = { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" };
 
 const PRODUCT_DIR = process.argv[2] ? path.resolve(process.argv[2]) : __dirname;
@@ -38,7 +38,7 @@ function toDataUri(file) {
 }
 
 async function submitTask(prompt, imageUrls, size) {
-  const payload = { model: "gpt-image-2", prompt, n: 1, size, resolution: "2k", image_urls: imageUrls };
+  const payload = { model: "gpt-image-2-official", prompt, n: 1, size, resolution: "2k", image_urls: imageUrls };
   const res = await fetch(`${BASE_URL}/v1/images/generations`, { method: "POST", headers, body: JSON.stringify(payload) });
   const text = await res.text();
   if (!res.ok) throw new Error(`submit HTTP ${res.status}: ${text}`);
@@ -71,7 +71,7 @@ async function download(url, dest) {
 
 function resizeForApi(imgPath, outPath) {
   try {
-    execSync(`sips -Z 512 "${imgPath}" --out "${outPath}" > /dev/null 2>&1`);
+    fs.copyFileSync(imgPath, outPath);
     return outPath;
   } catch {
     return imgPath;
@@ -313,7 +313,7 @@ function makeJobs(platform) {
   const platformDir = path.join(OUT_DIR, platform);
   fs.mkdirSync(platformDir, { recursive: true });
 
-  const apiSize = platform === "pc" ? "auto" : "1024x768";
+  const apiSize = "auto";
   const jobs = [];
 
   // 01 Hero
@@ -429,7 +429,14 @@ if (DRY_RUN) {
     }
   }));
 
-  // Phase 3: Download (no resize — API returns exact size)
+  // Phase 3: Download + force exact dimensions
+  function resizeToExact(imgPath, width, height) {
+    try {
+      execSync(`sips -z ${height} ${width} "${imgPath}" > /dev/null 2>&1`);
+      return true;
+    } catch { return false; }
+  }
+
   let okCount = 0;
   for (const r of results) {
     if (!r.ok) continue;
@@ -439,8 +446,12 @@ if (DRY_RUN) {
     const dest = allJobs.find(j => j.key === r.key && j.platform === r.platform).dest;
     try {
       await download(url, dest);
-      const stats = fs.statSync(dest);
-      console.log(`  ✅ [${r.platform}] ${r.key} -> ${dest} (${(stats.size / 1024).toFixed(1)} KB)`);
+      const [w, h] = r.platform === "pc" ? [1464, 600] : [1024, 768];
+      if (resizeToExact(dest, w, h)) {
+        console.log(`  ✅ [${r.platform}] ${r.key} -> ${dest} (resized to ${w}x${h})`);
+      } else {
+        console.log(`  ⚠️ [${r.platform}] ${r.key} -> ${dest} (resize failed)`);
+      }
       okCount++;
     } catch (e) {
       console.error(`  ❌ [${r.platform}] ${r.key} download failed: ${e.message}`);

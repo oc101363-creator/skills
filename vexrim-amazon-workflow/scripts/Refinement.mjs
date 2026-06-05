@@ -8,7 +8,7 @@ const envPath = "/Users/mingkaichen/项目/image2/.env";
 const API_KEY = fs.readFileSync(envPath, "utf8").match(/APIMART_API_KEY=(.+)/)?.[1]?.trim();
 if (!API_KEY) { console.error("Missing API key in .env"); process.exit(1); }
 
-const BASE_URL = "https://api.apimart.ai";
+const BASE_URL = "https://api.aishuch.com";
 const headers = { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" };
 
 const INPUT_DIR = process.argv[2];
@@ -18,7 +18,7 @@ if (!INPUT_DIR) {
   process.exit(1);
 }
 
-const OUT_DIR = path.join(INPUT_DIR, "processed");
+const OUT_DIR = INPUT_DIR.includes("图片素材") ? path.join(INPUT_DIR, "..", "processed") : path.join(INPUT_DIR, "processed");
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
 const PROMPT = `Convert this factory starter motor photo into a professional Amazon/e-commerce white-background product image.
@@ -44,7 +44,7 @@ function toDataUri(file) {
 }
 
 async function submit(imagePath) {
-  const payload = { model: "gpt-image-2", prompt: PROMPT, n: 1, resolution: "2k", image_urls: [toDataUri(imagePath)] };
+  const payload = { model: "gpt-image-2-official", prompt: PROMPT, n: 1, resolution: "2k", image_urls: [toDataUri(imagePath)] };
   const res = await fetch(`${BASE_URL}/v1/images/generations`, { method: "POST", headers, body: JSON.stringify(payload) });
   const text = await res.text();
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);

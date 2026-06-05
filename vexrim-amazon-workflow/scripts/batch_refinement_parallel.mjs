@@ -18,9 +18,11 @@ const products = [];
 for (const name of fs.readdirSync(ROOT)) {
   const dir = path.join(ROOT, name);
   if (!fs.statSync(dir).isDirectory()) continue;
-  const hasImages = fs.readdirSync(dir).some(f => /^\d+\.(jpg|jpeg|png)$/i.test(f));
+  const materialDir = path.join(dir, "图片素材");
+  const imgDir = fs.existsSync(materialDir) ? materialDir : dir;
+  const hasImages = fs.readdirSync(imgDir).some(f => /^\d+\.(jpg|jpeg|png)$/i.test(f));
   if (hasImages) {
-    products.push(dir);
+    products.push(imgDir);
   } else {
     console.log(`[SKIP] ${name} (no numbered images)`);
   }

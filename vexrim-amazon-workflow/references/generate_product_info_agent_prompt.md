@@ -1,11 +1,13 @@
-# Agent Task: Generate product_info.json
+# Agent Task: Rewrite processed/info.json to A+ format
 
 ## 任务
-读取 `{product_dir}/processed/info.json`，基于产品信息**改写**生成 `{product_dir}/product_info.json`。
+读取 `{product_dir}/图片素材/info.json`（原始 Amazon 信息），整理后**直接覆盖写入** `{product_dir}/processed/info.json`。
+
+`processed/info.json` 是 A+ 生成的**唯一文字来源**，必须包含 A+ 格式字段。
 
 **不是复制，不是截断，是改写（rewriting）** —— 用更精炼的语言表达相同的核心信息。
 
-## 输入格式（processed/info.json）
+## 输入格式（图片素材/info.json）
 
 ```json
 {
@@ -19,7 +21,7 @@
 }
 ```
 
-## 输出格式（product_info.json）
+## 输出格式（processed/info.json）
 
 ```json
 {

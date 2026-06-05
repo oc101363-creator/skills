@@ -8,7 +8,7 @@ const envPath = path.resolve(__dirname, "../.env");
 const API_KEY = fs.readFileSync(envPath, "utf8").match(/APIMART_API_KEY=(.+)/)?.[1]?.trim();
 if (!API_KEY) { console.error("Missing API key in .env"); process.exit(1); }
 
-const BASE_URL = "https://api.apimart.ai";
+const BASE_URL = "https://api.aishuch.com";
 const headers = { Authorization: `Bearer ${API_KEY}`, "Content-Type": "application/json" };
 const TEMPLATE_DIR = path.join(__dirname, "../templates");
 
@@ -33,7 +33,7 @@ function toDataUri(file) {
 }
 
 async function submitTask(prompt, imageUrls) {
-  const payload = { model: "gpt-image-2", prompt, n: 1, resolution: "2k", image_urls: imageUrls };
+  const payload = { model: "gpt-image-2-official", prompt, n: 1, resolution: "2k", image_urls: imageUrls };
   const res = await fetch(`${BASE_URL}/v1/images/generations`, { method: "POST", headers, body: JSON.stringify(payload) });
   const text = await res.text();
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);

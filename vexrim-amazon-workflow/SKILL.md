@@ -10,9 +10,9 @@ description: |
 
 ## 核心原则
 
-1. **数据驱动**：`product_info.json` 是 A+ 的唯一文字来源，所有图片文字必须 verbatim 来自其中
+1. **数据驱动**：`processed/info.json` 是 A+ 的唯一文字来源，所有图片文字必须 verbatim 来自其中
 2. **模板映射**：照片编号 → 输出图的映射关系由固定的 spec 文件定义，不硬编码在脚本中
-3. **先 product_info 后图片**：先手写/审核 `product_info.json` 确认数据正确，再调用 API 生成图片
+3. **先 info 后图片**：先手写/审核 `processed/info.json` 确认数据正确，再调用 API 生成图片
 4. **ZERO HALLUCINATION**：零件号、车型年份、技术参数必须 verbatim 复制
 
 ## 目录结构规范
@@ -22,8 +22,7 @@ description: |
 ```
 {产品名}/
 ├── 图片素材/              ← 工厂原始图（1.jpg ~ N.jpg）+ 原始 info.json
-├── processed/             ← 精修后的白底图（1.png/01.png ~ N.png）
-├── product_info.json      ← Agent 手写（A+ 唯一文字来源）
+├── processed/             ← 精修后的白底图（1.png/01.png ~ N.png）+ info.json（A+ 唯一文字来源）
 └── A+/                    ← 5张 A+ 海报输出
     ├── pc/                ← PC 端（1464×600）
     │   ├── 01.png
@@ -125,12 +124,14 @@ node scripts/batch_refinement_parallel.mjs ./products
 **输入**：`图片素材/1.jpg ~ 7.jpg`
 **输出**：`processed/1.jpg ~ 7.jpg`（白底精修图）
 
-### Phase 2: 标准化 + 手写 `product_info.json`
+### Phase 2: 手写 `processed/info.json`（A+ 唯一文字来源）
 
-#### Step 2a: Agent 手写 `processed/info.json`
+这是最关键的一步。所有 A+ 图片上的文字都硬编码读取自 `processed/info.json`，必须手写并逐条检查。
+
+#### Step 2a: Agent 手写标准化 info
 
 **输入**：`图片素材/info.json`（从 Amazon 抓取的原始信息）
-**输出**：`processed/info.json`（标准化后的参考信息，Agent 手写）
+**输出**：`processed/info.json`（标准化参考信息，Agent 手写）
 
 Agent 读取原始 `图片素材/info.json`，人工整理后写入 `processed/info.json`：
 - `product_info` — SKU、品类、品牌（品牌固定为 `"VEXRIM"`）
@@ -143,12 +144,10 @@ Agent 读取原始 `图片素材/info.json`，人工整理后写入 `processed/i
 
 原始信息保留在 `图片素材/info.json`，不额外备份。
 
-#### Step 2b: 手写 `product_info.json`（A+ 唯一文字来源）
+#### Step 2b: 改写为 A+ 格式（覆盖 `processed/info.json`）
 
-这是最关键的一步。所有 A+ 图片上的文字都硬编码读取自 `product_info.json`，必须手写并逐条检查。
-
-**输入**：`processed/info.json`（标准化后的参考信息）
-**输出**：`{产品名}/product_info.json`
+**输入**：Step 2a 产生的 `processed/info.json`（标准化参考信息）
+**输出**：覆盖写入 `{产品名}/processed/info.json`（A+ 格式）
 
 **手写规范**（见 `references/product_info_spec.md`）：
 
@@ -157,12 +156,14 @@ Agent 读取原始 `图片素材/info.json`，人工整理后写入 `processed/i
   "product_info": { "name": "...", "category": "..." },
   "hero": { "headline": "...", "subheadline": "..." },
   "features": { "feature_1": { "title": "...", "description": "..." }, ... },
-  "vehicle_fitment": { "rows": [["年份", "品牌", "车型", "备注"], ...] },
+  "vehicle_fitment": { "rows": [["Year", "Make", "Model", "Notes"], ...] },
   "oe_part_numbers": ["..."],
   "specifications": [{ "label": "...", "value": "..." }],
   "detail_callouts": { "left_top": "...", "left_middle": "...", "left_bottom": "..." }
 }
 ```
+
+> **所有文字必须是英文**，表头也不例外。Amazon 面向英语市场，禁止出现中文。
 
 **字符限制（Mobile 1024×768 可读性约束，超限会导致文字 < 12px）**：
 
@@ -181,7 +182,7 @@ Agent 读取原始 `图片素材/info.json`，人工整理后写入 `processed/i
 
 **必须检查**：
 - [ ] `features` 至少 4 条有效卖点
-- [ ] `vehicle_fitment.rows` 不为空，年份正确
+- [ ] `vehicle_fitment.rows` 不为空，年份正确，**表头为英文**
 - [ ] `oe_part_numbers` 不为空，无品牌名混入
 - [ ] `specifications` 包含 Voltage 等关键参数
 - [ ] **所有字段字符数在限制范围内**
@@ -195,7 +196,7 @@ node scripts/generate_main_specs.mjs ./products/xxx
 
 **必须检查**生成的 `主图_specs.json`：
 - [ ] photo_refs 路径有效（非 null）
-- [ ] 文字内容与 `product_info.json` 一致
+- [ ] 文字内容与 `processed/info.json` 一致
 
 ### Phase 4: 生成 A+ 图片（API 调用）
 
@@ -210,7 +211,7 @@ node scripts/poster_a_plus_generator.mjs ./products/xxx --only=01,04
 node scripts/batch_a_plus.mjs ./products/batch_dir 5
 ```
 
-**输入**：`product_info.json` + `processed/` 精修图
+**输入**：`processed/info.json` + `processed/` 精修图
 **输出**：`A+/pc/` 和 `A+/mobile/` 各 5 张图
 
 | 输出图 | 数据来源 | 素材来源 | 类型 |
@@ -228,7 +229,7 @@ node scripts/batch_a_plus.mjs ./products/batch_dir 5
 node scripts/generate_main_images.mjs ./products/xxx
 ```
 
-**A+**（读 `product_info.json`，硬编码字段映射）：
+**A+**（读 `processed/info.json`，硬编码字段映射）：
 ```bash
 node scripts/poster_a_plus_generator.mjs ./products/xxx
 ```
@@ -260,7 +261,7 @@ vexrim-amazon-workflow/
 │   ├── batch_refinement_parallel.mjs     ← 批量精修（5并发）
 │   ├── generate_main_specs.mjs           ← 生成 主图_specs.json
 │   ├── generate_main_images.mjs          ← 单产品7张主图生成
-│   ├── poster_a_plus_generator.mjs       ← A+ 海报生成（读 product_info.json）
+│   ├── poster_a_plus_generator.mjs       ← A+ 海报生成（读 processed/info.json）
 │   ├── batch_a_plus.mjs                  ← 批量A+生成（5并发）
 │   ├── batch_generate.mjs                ← 批量主图生成（3并发）
 │   ├── pipeline.mjs                      ← 统一流水线入口
@@ -268,7 +269,8 @@ vexrim-amazon-workflow/
 │   ├── download_material_images.py       ← 从飞书素材表下载工厂照片
 │   └── fetch_amazon_images.py            ← 抓取竞品参考图（可选）
 ├── references/                           ← Spec / 映射规则（只读配置）
-│   ├── product_info_spec.md              ← product_info.json 字段规范
+│   ├── product_info_spec.md              ← processed/info.json 字段规范
+│   ├── generate_product_info_agent_prompt.md ← Agent 改写 info 的 prompt
 │   ├── photo_classifier_spec.json        ← 工厂照片通用编号规则
 │   ├── A_Plus_template_mapping_spec.json ← A+ 模板映射规则
 │   └── 主图_template_mapping_spec.json
@@ -302,8 +304,8 @@ vexrim-amazon-workflow/
 
 | Spec 文件 | 位置 | 内容 |
 |-----------|------|------|
-| `product_info_spec.md` | `references/` | product_info.json 字段规范（A+和主图文字来源） |
-| `generate_product_info_agent_prompt.md` | `references/` | Agent 从原始 info 改写生成 product_info.json 的 prompt |
+| `product_info_spec.md` | `references/` | processed/info.json 字段规范（A+和主图文字来源） |
+| `generate_product_info_agent_prompt.md` | `references/` | Agent 从原始 info 改写生成 processed/info.json 的 prompt |
 | `photo_classifier_spec.json` | `references/` | 工厂照片通用编号规则（1-3 全身照，≥4 细节图） |
 | `A_Plus_template_mapping_spec.json` | `references/` | A+ 模板映射与面板切换规则 |
 | `主图_template_mapping_spec.json` | `references/` | 主图01~07的素材映射与占位符填充规则 |
@@ -335,7 +337,7 @@ A：检查原始图质量。Refinement.mjs 的 prompt 约束了 ZERO HALLUCINATI
 A：表示对应编号的工厂图缺失。05/04 等可以容忍1-2张缺失，但 01/02 的 1.jpg 必须存在。
 
 **Q：02 的 oe_numbers 混入品牌名？**
-A：手写 product_info.json 时检查 `oe_part_numbers`，排除品牌名、车型名、年份。只保留真正的零件号。
+A：写 `processed/info.json` 时检查 `oe_part_numbers`，排除品牌名、车型名、年份。只保留真正的零件号。
 
 **Q：API 超时/524？**
 A：降低 resolution 到 "2k"，减少并发，或单独重试失败的产品。

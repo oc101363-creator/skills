@@ -15,7 +15,7 @@ const dirs = fs.readdirSync(ROOT)
   .filter(d => {
     if (!fs.statSync(d).isDirectory()) return false;
     const hasProcessed = fs.existsSync(path.join(d, "processed"));
-    const hasSpecs = fs.existsSync(path.join(d, "product_info.json"));
+    const hasSpecs = fs.existsSync(path.join(d, "processed", "info.json"));
     return hasProcessed && hasSpecs;
   })
   .sort();

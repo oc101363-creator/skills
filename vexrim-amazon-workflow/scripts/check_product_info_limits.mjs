@@ -19,7 +19,7 @@ const LIMITS = {
 };
 
 function checkProduct(dirPath) {
-  const infoPath = path.join(dirPath, "product_info.json");
+  const infoPath = path.join(dirPath, "processed", "info.json");
   if (!fs.existsSync(infoPath)) return null;
 
   const info = JSON.parse(fs.readFileSync(infoPath, "utf8"));

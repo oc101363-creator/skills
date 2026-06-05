@@ -180,8 +180,8 @@ function getCallouts(category) {
 
 // ── Main conversion ──
 function generate(dirPath) {
-  const src = path.join(dirPath, "processed", "info.json");
-  const dst = path.join(dirPath, "product_info.json");
+  const src = path.join(dirPath, "图片素材", "info.json");
+  const dst = path.join(dirPath, "processed", "info.json");
 
   if (!fs.existsSync(src)) {
     console.log(`  SKIP: no processed/info.json in ${path.basename(dirPath)}`);
@@ -236,4 +236,4 @@ for (const root of roots) {
     if (generate(dir)) count++;
   }
 }
-console.log(`\nDone. Generated ${count} product_info.json files.`);
+console.log(`\nDone. Generated ${count} processed/info.json files.`);

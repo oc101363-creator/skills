@@ -9,7 +9,7 @@ if (roots.length === 0) {
 
 function convert(dirPath) {
   const src = path.join(dirPath, "a_plus_specs.json");
-  const dst = path.join(dirPath, "product_info.json");
+  const dst = path.join(dirPath, "processed", "info.json");
 
   if (!fs.existsSync(src)) {
     console.log(`  SKIP: no a_plus_specs.json in ${path.basename(dirPath)}`);
@@ -18,7 +18,7 @@ function convert(dirPath) {
 
   const old = JSON.parse(fs.readFileSync(src, "utf8"));
 
-  // Build clean product_info.json — NO truncation, preserve full text
+  // Build clean processed/info.json — NO truncation, preserve full text
   const product = {
     product_info: {
       name: old.product_info?.name || "",
